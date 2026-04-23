@@ -1,0 +1,23 @@
+# Env / secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Scraped artifacts (regenerated por scraper.py)
+out/
+
+# Claude Code local state
+.claude/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
