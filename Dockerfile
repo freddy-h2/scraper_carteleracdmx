@@ -13,6 +13,6 @@ RUN apt-get update \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY scraper.py ingest_supabase.py ./
+COPY scraper.py ingest_supabase.py run_scheduled.py ./
 
-CMD ["python", "ingest_supabase.py"]
+CMD ["python", "run_scheduled.py"]
