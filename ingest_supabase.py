@@ -12,6 +12,7 @@ Opcionales:
   SCRAPER_SLEEP=0.5      pausa entre requests a cartelera.cdmx
   SCRAPER_DETAIL=1       1=incluye detalle por evento/lugar (default), 0=rápido
   UPSERT_BATCH=500       filas por request a PostgREST
+  DRY_RUN=0              1=scrapea pero NO escribe a Supabase (solo loguea conteos)
 """
 
 from __future__ import annotations
@@ -108,10 +109,12 @@ def main() -> int:
     sleep = float(os.environ.get("SCRAPER_SLEEP", "0.5"))
     detail = os.environ.get("SCRAPER_DETAIL", "1") != "0"
     batch = int(os.environ.get("UPSERT_BATCH", "500"))
+    dry_run = os.environ.get("DRY_RUN", "0") == "1"
 
     started = time.time()
     print(
-        f"[ingest] inicio sleep={sleep} detail={detail} batch={batch}",
+        f"[ingest] inicio sleep={sleep} detail={detail} batch={batch} "
+        f"dry_run={dry_run}",
         file=sys.stderr,
     )
 
@@ -123,8 +126,15 @@ def main() -> int:
     v_rows = [_project(v, VENUE_COLS) for v in venues]
     e_rows = [_project(e, EVENT_COLS) for e in events]
 
-    _upsert(url, key, "cartelera_venues", v_rows, "venue_id", batch)
-    _upsert(url, key, "cartelera_events", e_rows, "event_id", batch)
+    if dry_run:
+        print(
+            f"[ingest] DRY_RUN: se habrían upserteado "
+            f"{len(v_rows)} venues + {len(e_rows)} events (skip escritura)",
+            file=sys.stderr,
+        )
+    else:
+        _upsert(url, key, "cartelera_venues", v_rows, "venue_id", batch)
+        _upsert(url, key, "cartelera_events", e_rows, "event_id", batch)
 
     elapsed = time.time() - started
     print(
